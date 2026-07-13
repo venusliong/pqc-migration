@@ -1,0 +1,9 @@
+# third-party scan targets (shallow clones, re-fetch with git clone --depth 1)
+targets/
+
+# generated scan output
+report.md
+findings.json
+
+# local Claude Code permission settings
+.claude/settings.local.json

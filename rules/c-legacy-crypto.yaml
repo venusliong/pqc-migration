@@ -1,0 +1,208 @@
+rules:
+  # ---------------------------------------------------------------
+  # Key exchange / key agreement (highest priority: harvest-now-decrypt-later)
+  # ---------------------------------------------------------------
+  - id: c-openssl-dh-key-agreement
+    languages: [c]
+    severity: ERROR
+    message: >-
+      Classic Diffie-Hellman key agreement ($FN) is quantum-vulnerable.
+      Migrate to ML-KEM-768 (FIPS 203); for TLS/SSH transports prefer a
+      hybrid group such as X25519MLKEM768 / mlkem768x25519-sha256.
+    metadata:
+      category: key-exchange
+      primitive: DH
+      pqc_replacement: ML-KEM-768 (FIPS 203), hybrid X25519MLKEM768
+      priority: P1
+    patterns:
+      - pattern-either:
+          - pattern: DH_new()
+          - pattern: DH_generate_key(...)
+          - pattern: DH_compute_key(...)
+          - pattern: DH_compute_key_padded(...)
+          - pattern: DH_generate_parameters_ex(...)
+
+  - id: c-openssl-ecdh-key-agreement
+    languages: [c]
+    severity: ERROR
+    message: >-
+      ECDH key agreement ($FN) is quantum-vulnerable (Shor). Migrate to
+      ML-KEM-768 (FIPS 203); for transports prefer hybrid X25519MLKEM768.
+    metadata:
+      category: key-exchange
+      primitive: ECDH
+      pqc_replacement: ML-KEM-768 (FIPS 203), hybrid X25519MLKEM768
+      priority: P1
+    patterns:
+      - pattern-either:
+          - pattern: ECDH_compute_key(...)
+          - pattern: EVP_PKEY_derive(...)
+
+  # ---------------------------------------------------------------
+  # RSA (encryption + signatures)
+  # ---------------------------------------------------------------
+  - id: c-openssl-rsa-lowlevel
+    languages: [c]
+    severity: ERROR
+    message: >-
+      Low-level RSA API ($FN) is quantum-vulnerable. For key transport /
+      encryption migrate to ML-KEM-768 (FIPS 203, KEM-DEM); for signatures
+      migrate to ML-DSA-65 (FIPS 204).
+    metadata:
+      category: rsa
+      primitive: RSA
+      pqc_replacement: ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)
+      priority: P1
+    patterns:
+      - pattern-either:
+          - pattern: RSA_new()
+          - pattern: RSA_generate_key(...)
+          - pattern: RSA_generate_key_ex(...)
+          - pattern: RSA_public_encrypt(...)
+          - pattern: RSA_private_decrypt(...)
+          - pattern: RSA_private_encrypt(...)
+          - pattern: RSA_public_decrypt(...)
+          - pattern: RSA_sign(...)
+          - pattern: RSA_verify(...)
+
+  # ---------------------------------------------------------------
+  # ECDSA / DSA signatures
+  # ---------------------------------------------------------------
+  - id: c-openssl-ecdsa-signature
+    languages: [c]
+    severity: ERROR
+    message: >-
+      ECDSA signature API ($FN) is quantum-vulnerable. Migrate to ML-DSA-65
+      (FIPS 204); use SLH-DSA (FIPS 205) for long-lived/firmware signatures.
+    metadata:
+      category: signature
+      primitive: ECDSA
+      pqc_replacement: ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)
+      priority: P2
+    patterns:
+      - pattern-either:
+          - pattern: ECDSA_sign(...)
+          - pattern: ECDSA_do_sign(...)
+          - pattern: ECDSA_verify(...)
+          - pattern: ECDSA_do_verify(...)
+          - pattern: ECDSA_SIG_new()
+
+  - id: c-openssl-dsa-signature
+    languages: [c]
+    severity: ERROR
+    message: >-
+      DSA ($FN) is quantum-vulnerable and deprecated classically. Migrate to
+      ML-DSA-65 (FIPS 204).
+    metadata:
+      category: signature
+      primitive: DSA
+      pqc_replacement: ML-DSA-65 (FIPS 204)
+      priority: P2
+    patterns:
+      - pattern-either:
+          - pattern: DSA_new()
+          - pattern: DSA_generate_key(...)
+          - pattern: DSA_generate_parameters_ex(...)
+          - pattern: DSA_sign(...)
+          - pattern: DSA_verify(...)
+          - pattern: DSA_do_sign(...)
+          - pattern: DSA_do_verify(...)
+
+  # ---------------------------------------------------------------
+  # EC key management (feeds both ECDSA and ECDH)
+  # ---------------------------------------------------------------
+  - id: c-openssl-ec-key
+    languages: [c]
+    severity: WARNING
+    message: >-
+      EC key management ($FN) backs quantum-vulnerable ECDSA/ECDH usage.
+      Migrate signatures to ML-DSA-65 (FIPS 204) and key agreement to
+      ML-KEM-768 (FIPS 203).
+    metadata:
+      category: ec-key
+      primitive: EC
+      pqc_replacement: ML-DSA-65 (sign) / ML-KEM-768 (kex)
+      priority: P2
+    patterns:
+      - pattern-either:
+          - pattern: EC_KEY_new()
+          - pattern: EC_KEY_new_by_curve_name(...)
+          - pattern: EC_KEY_generate_key(...)
+
+  # ---------------------------------------------------------------
+  # EVP API with algorithm selected by ID or name string
+  # ---------------------------------------------------------------
+  - id: c-openssl-evp-legacy-alg-id
+    languages: [c]
+    severity: ERROR
+    message: >-
+      EVP keygen/context bound to quantum-vulnerable algorithm ID ($ALG).
+      Migrate RSA/EC/DSA/DH usage to ML-KEM-768 (FIPS 203) for key
+      establishment or ML-DSA-65 (FIPS 204) for signatures.
+    metadata:
+      category: evp
+      primitive: EVP(id)
+      pqc_replacement: ML-KEM-768 (kex/encrypt) or ML-DSA-65 (sign)
+      priority: P1
+    patterns:
+      - pattern-either:
+          - pattern: EVP_PKEY_CTX_new_id($ALG, ...)
+          - pattern: EVP_PKEY_set_type($PKEY, $ALG)
+      - metavariable-pattern:
+          metavariable: $ALG
+          pattern-either:
+            - pattern: EVP_PKEY_RSA
+            - pattern: EVP_PKEY_RSA_PSS
+            - pattern: EVP_PKEY_EC
+            - pattern: EVP_PKEY_DSA
+            - pattern: EVP_PKEY_DH
+            - pattern: EVP_PKEY_ED25519
+            - pattern: EVP_PKEY_ED448
+            - pattern: EVP_PKEY_X25519
+            - pattern: EVP_PKEY_X448
+            - pattern: NID_X9_62_id_ecPublicKey
+
+  - id: c-openssl-evp-legacy-alg-name
+    languages: [c]
+    severity: ERROR
+    message: >-
+      EVP keygen by algorithm name string ($ALG) selects a quantum-vulnerable
+      algorithm. Migrate to ML-KEM-768 (FIPS 203) for key establishment or
+      ML-DSA-65 (FIPS 204) for signatures.
+    metadata:
+      category: evp
+      primitive: EVP(name)
+      pqc_replacement: ML-KEM-768 (kex/encrypt) or ML-DSA-65 (sign)
+      priority: P1
+    patterns:
+      - pattern-either:
+          - pattern: EVP_PKEY_new_from_name($LIB, $ALG, ...)
+          - pattern: EVP_PKEY_CTX_new_from_name($LIB, $ALG, ...)
+          - pattern: EVP_PKEY_Q_keygen($LIB, $PROP, $ALG, ...)
+      - metavariable-regex:
+          metavariable: $ALG
+          regex: '"(RSA|RSA-PSS|EC|DSA|DH|DHX|X25519|X448|ED25519|ED448)"'
+
+  # ---------------------------------------------------------------
+  # Weak / legacy hashes (classical weakness; Grover margin for PQC era)
+  # ---------------------------------------------------------------
+  - id: c-openssl-weak-hash
+    languages: [c]
+    severity: WARNING
+    message: >-
+      Weak/legacy hash ($FN). MD5 and SHA-1 are classically broken for
+      collisions; for PQC-era margin use SHA-256 minimum, SHA-384+ preferred.
+    metadata:
+      category: hash
+      primitive: MD5/SHA1
+      pqc_replacement: SHA-384 or SHA3-384
+      priority: P3
+    patterns:
+      - pattern-either:
+          # bare identifiers: also match function-pointer table usage
+          - pattern: EVP_md5
+          - pattern: EVP_sha1
+          - pattern: MD5(...)
+          - pattern: MD5_Init(...)
+          - pattern: SHA1(...)
+          - pattern: SHA1_Init(...)
