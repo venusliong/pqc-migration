@@ -25,6 +25,34 @@ python3 scripts/scan.py targets/openssh-portable --out report.md --json findings
 Priorities in the report: P1 = key exchange / RSA (harvest-now-decrypt-later
 exposure), P2 = signatures / EC key material, P3 = weak hashes.
 
+## CodeQL stage (dataflow-precise)
+
+- `codeql/` — query pack `pqc/crypto-queries`: `LegacyCryptoAPIs.ql` (direct
+  legacy calls, EVP contexts bound to legacy algorithm IDs via macros, weak
+  hashes incl. function-pointer references) and `AlgorithmNameFlow.ql`
+  (path-problem: algorithm name strings flowing across functions into EVP
+  by-name factories).
+- `.mcp.json` — registers GitHub's `codeql-development-mcp-server` (npx) so
+  agent sessions can run queries interactively; it locates the CLI via
+  `CODEQL_PATH` and databases via `CODEQL_DATABASES_BASE_DIRS`.
+
+```sh
+# one-time: CodeQL CLI in ~/tools/codeql, then
+cd codeql && codeql pack install
+
+# build a database (requires the target to build)
+cd targets/openssh-portable && autoreconf -i && ./configure
+codeql database create ../../dbs/openssh-portable --language=cpp --command="make -j$(nproc)"
+
+# run the pack
+codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=codeql.sarif
+```
+
+On openssh-portable: CodeQL finds a strict superset of the Semgrep findings
+outside uncompiled test dirs (`regress/` is invisible to CodeQL since `make`
+doesn't build it), and additionally catches Ed25519 raw-key EVP calls that
+pattern matching missed.
+
 ## Notes
 
 - Scan crypto *consumers*, not crypto *implementations* (don't point this at

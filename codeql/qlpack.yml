@@ -1,0 +1,5 @@
+name: pqc/crypto-queries
+version: 0.1.0
+description: Detect quantum-vulnerable crypto API usage with PQC migration suggestions
+dependencies:
+  codeql/cpp-all: "*"

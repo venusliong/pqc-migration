@@ -5,5 +5,9 @@ targets/
 report.md
 findings.json
 
+# CodeQL databases (rebuild: codeql database create dbs/<name> --language=cpp --command=make)
+dbs/
+codeql/.codeql/
+
 # local Claude Code permission settings
 .claude/settings.local.json

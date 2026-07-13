@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "ql-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "codeql-development-mcp-server"
+      ],
+      "env": {
+        "CODEQL_PATH": "/home/venusliong/tools/codeql/codeql",
+        "CODEQL_DATABASES_BASE_DIRS": "/home/venusliong/pqc/pqc-migration/dbs"
+      }
+    }
+  }
+}

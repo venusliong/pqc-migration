@@ -60,9 +60,31 @@ either side:
   OpenSSL/mbedTLS themselves — every match would be the library implementing,
   not depending on, an algorithm).
 
+## CodeQL stage
+
+`codeql/` is a query pack (`pqc/crypto-queries`) run against databases in
+`dbs/` (gitignored; rebuild per README). The CLI lives at
+`~/tools/codeql/codeql` — not on default PATH. `.mcp.json` registers GitHub's
+`codeql-development-mcp-server` (via npx, works on Node 24 despite its
+engines field saying 25.6+); its `codeql_query_run` tool takes `query` and
+`database` (absolute paths) as arguments.
+
+Hard-won specifics:
+
+- The CodeQL database only contains files the traced `make` compiled —
+  openssh's `regress/` never appears, so Semgrep-vs-CodeQL finding counts
+  differ by exactly those files. Compare per-site, not by totals.
+- Weak-hash detection must match `FunctionAccess` as well as `FunctionCall`
+  (digest dispatch tables hold `EVP_md5` as a pointer).
+- `AlgorithmNameFlow.ql` legitimately returns zero on openssh (no by-name
+  EVP factories there); its dataflow is verified by a synthetic test —
+  string literal → variable → helper parameter → `EVP_PKEY_CTX_new_from_name`.
+- CodeQL resolves macro-fed algorithm IDs (`EVP_PKEY_ED25519` into
+  `EVP_PKEY_new_raw_private_key`) that the Semgrep rules missed; keep the
+  two rule sets in sync when adding primitives.
+
 ## Roadmap context
 
-Planned second stage is a CodeQL pass (dataflow-precise, requires building
-the target) for algorithm strings that travel across files; other candidates:
-CycloneDX CBOM output, tagging/excluding test dirs (`regress/` in openssh),
-and Java rules to score against CryptoAPI-Bench.
+Candidates: CycloneDX CBOM output, tagging/excluding test dirs (`regress/`
+in openssh), Java rules to score against CryptoAPI-Bench, merging
+Semgrep+CodeQL findings into one report.
