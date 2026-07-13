@@ -59,10 +59,13 @@ def main() -> None:
     ap.add_argument("target", type=Path)
     ap.add_argument("--rules", type=Path,
                     default=Path(__file__).resolve().parent.parent / "rules")
-    ap.add_argument("--out", type=Path, default=Path("report.md"))
+    ap.add_argument("--out", type=Path, default=None,
+                    help="default: <target>-semgrep-report.md")
     ap.add_argument("--json", type=Path, default=None,
                     help="also write raw findings as JSON")
     args = ap.parse_args()
+    if args.out is None:
+        args.out = Path(f"{args.target.name}-semgrep-report.md")
 
     data = run_semgrep(args.rules, args.target)
     findings = []

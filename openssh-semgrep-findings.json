@@ -1,0 +1,332 @@
+[
+  {
+    "file": "dh.c",
+    "line": 303,
+    "function": "DH_generate_key",
+    "primitive": "DH",
+    "category": "key-exchange",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (FIPS 203), hybrid X25519MLKEM768",
+    "rule": "c-openssl-dh-key-agreement"
+  },
+  {
+    "file": "dh.c",
+    "line": 317,
+    "function": "DH_new",
+    "primitive": "DH",
+    "category": "key-exchange",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (FIPS 203), hybrid X25519MLKEM768",
+    "rule": "c-openssl-dh-key-agreement"
+  },
+  {
+    "file": "dh.c",
+    "line": 341,
+    "function": "DH_new",
+    "primitive": "DH",
+    "category": "key-exchange",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (FIPS 203), hybrid X25519MLKEM768",
+    "rule": "c-openssl-dh-key-agreement"
+  },
+  {
+    "file": "ed25519-openssl.c",
+    "line": 53,
+    "function": "EVP_PKEY_CTX_new_id",
+    "primitive": "EVP(id)",
+    "category": "evp",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (kex/encrypt) or ML-DSA-65 (sign)",
+    "rule": "c-openssl-evp-legacy-alg-id"
+  },
+  {
+    "file": "kexdh.c",
+    "line": 97,
+    "function": "DH_compute_key",
+    "primitive": "DH",
+    "category": "key-exchange",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (FIPS 203), hybrid X25519MLKEM768",
+    "rule": "c-openssl-dh-key-agreement"
+  },
+  {
+    "file": "kexecdh.c",
+    "line": 178,
+    "function": "ECDH_compute_key",
+    "primitive": "ECDH",
+    "category": "key-exchange",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (FIPS 203), hybrid X25519MLKEM768",
+    "rule": "c-openssl-ecdh-key-agreement"
+  },
+  {
+    "file": "ssh-ecdsa.c",
+    "line": 175,
+    "function": "EVP_PKEY_CTX_new_id",
+    "primitive": "EVP(id)",
+    "category": "evp",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (kex/encrypt) or ML-DSA-65 (sign)",
+    "rule": "c-openssl-evp-legacy-alg-id"
+  },
+  {
+    "file": "ssh-keygen.c",
+    "line": 540,
+    "function": "RSA_new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "c-openssl-rsa-lowlevel"
+  },
+  {
+    "file": "ssh-pkcs11.c",
+    "line": 1039,
+    "function": "RSA_new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "c-openssl-rsa-lowlevel"
+  },
+  {
+    "file": "ssh-rsa.c",
+    "line": 130,
+    "function": "EVP_PKEY_CTX_new_id",
+    "primitive": "EVP(id)",
+    "category": "evp",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (kex/encrypt) or ML-DSA-65 (sign)",
+    "rule": "c-openssl-evp-legacy-alg-id"
+  },
+  {
+    "file": "ssh-rsa.c",
+    "line": 164,
+    "function": "RSA_new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "c-openssl-rsa-lowlevel"
+  },
+  {
+    "file": "ssh-rsa.c",
+    "line": 200,
+    "function": "RSA_new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "c-openssl-rsa-lowlevel"
+  },
+  {
+    "file": "ssh-rsa.c",
+    "line": 248,
+    "function": "RSA_new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "c-openssl-rsa-lowlevel"
+  },
+  {
+    "file": "kexecdh.c",
+    "line": 57,
+    "function": "EC_KEY_new_by_curve_name",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "kexecdh.c",
+    "line": 61,
+    "function": "EC_KEY_generate_key",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "kexecdh.c",
+    "line": 103,
+    "function": "EC_KEY_new_by_curve_name",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "kexecdh.c",
+    "line": 107,
+    "function": "EC_KEY_generate_key",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "regress/misc/sk-dummy/sk-dummy.c",
+    "line": 106,
+    "function": "EC_KEY_new_by_curve_name",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "regress/misc/sk-dummy/sk-dummy.c",
+    "line": 110,
+    "function": "EC_KEY_generate_key",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "regress/misc/sk-dummy/sk-dummy.c",
+    "line": 367,
+    "function": "ECDSA_do_sign",
+    "primitive": "ECDSA",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "c-openssl-ecdsa-signature"
+  },
+  {
+    "file": "regress/misc/ssh-verify-attestation/ssh-verify-attestation.c",
+    "line": 217,
+    "function": "EC_KEY_new_by_curve_name",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "regress/unittests/sshbuf/test_sshbuf_getput_crypto.c",
+    "line": 226,
+    "function": "EC_KEY_new_by_curve_name",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "regress/unittests/sshbuf/test_sshbuf_getput_crypto.c",
+    "line": 249,
+    "function": "EC_KEY_new_by_curve_name",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "regress/unittests/sshbuf/test_sshbuf_getput_fuzz.c",
+    "line": 63,
+    "function": "EC_KEY_new_by_curve_name",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "ssh-ecdsa-sk.c",
+    "line": 330,
+    "function": "ECDSA_SIG_new",
+    "primitive": "ECDSA",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "c-openssl-ecdsa-signature"
+  },
+  {
+    "file": "ssh-ecdsa.c",
+    "line": 206,
+    "function": "EC_KEY_new_by_curve_name",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "ssh-ecdsa.c",
+    "line": 245,
+    "function": "EC_KEY_new_by_curve_name",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "ssh-ecdsa.c",
+    "line": 456,
+    "function": "ECDSA_SIG_new",
+    "primitive": "ECDSA",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "c-openssl-ecdsa-signature"
+  },
+  {
+    "file": "ssh-pkcs11.c",
+    "line": 906,
+    "function": "EC_KEY_new",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "ssh-sk.c",
+    "line": 221,
+    "function": "EC_KEY_new_by_curve_name",
+    "primitive": "EC",
+    "category": "ec-key",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (sign) / ML-KEM-768 (kex)",
+    "rule": "c-openssl-ec-key"
+  },
+  {
+    "file": "digest-openssl.c",
+    "line": 59,
+    "function": "EVP_md5",
+    "primitive": "MD5/SHA1",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "c-openssl-weak-hash"
+  },
+  {
+    "file": "digest-openssl.c",
+    "line": 60,
+    "function": "EVP_sha1",
+    "primitive": "MD5/SHA1",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "c-openssl-weak-hash"
+  },
+  {
+    "file": "sshkey.c",
+    "line": 487,
+    "function": "EVP_sha1",
+    "primitive": "MD5/SHA1",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "c-openssl-weak-hash"
+  }
+]

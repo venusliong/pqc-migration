@@ -62,7 +62,7 @@ Evaluated as a replacement for a hand-rolled CodeQL wrapper; adopted.
 ## Reproducing
 
 ```sh
-python3 scripts/scan.py targets/openssh-portable --out report.md --json findings.json
+python3 scripts/scan.py targets/openssh-portable --out openssh-semgrep-report.md --json openssh-semgrep-findings.json
 codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=openssh-codeql.sarif
-python3 scripts/codeql_report.py openssh-codeql.sarif --out codeql-report.md
+python3 scripts/codeql_report.py openssh-codeql.sarif   # -> openssh-codeql-report.md
 ```

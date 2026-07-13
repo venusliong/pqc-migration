@@ -1,10 +1,6 @@
 # third-party scan targets (shallow clones, re-fetch with git clone --depth 1)
 targets/
 
-# generated scan output
-report.md
-findings.json
-
 # CodeQL databases (rebuild: codeql database create dbs/<name> --language=cpp --command=make)
 dbs/
 codeql/.codeql/

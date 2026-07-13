@@ -14,7 +14,7 @@ suite yet.
 
 ```sh
 # run a scan (semgrep lives in ~/.local/bin — ensure it's on PATH)
-python3 scripts/scan.py targets/openssh-portable --out report.md --json findings.json
+python3 scripts/scan.py targets/openssh-portable --json openssh-semgrep-findings.json
 
 # debug a single rule against one file
 semgrep scan --config rules/c-legacy-crypto.yaml --metrics off <file.c>
@@ -23,8 +23,10 @@ semgrep scan --config rules/c-legacy-crypto.yaml --metrics off <file.c>
 git clone --depth 1 <repo-url> targets/<name>
 ```
 
-`report.md` and `findings.json` at the repo root are generated output —
-regenerate rather than hand-edit.
+Reports at the repo root are committed deliverables named per target
+(`openssh-semgrep-report.md`, `openssh-codeql.sarif`,
+`openssh-codeql-report.md`); regenerate rather than hand-edit. Both report
+scripts derive per-target output names when `--out` is omitted.
 
 ## Architecture
 

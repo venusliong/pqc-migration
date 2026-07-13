@@ -19,7 +19,7 @@ file, line, the crypto function used, and a suggested PQC replacement
 
 ```sh
 pip3 install --user semgrep   # once
-python3 scripts/scan.py targets/openssh-portable --out report.md --json findings.json
+python3 scripts/scan.py targets/openssh-portable --json openssh-semgrep-findings.json
 ```
 
 Priorities in the report: P1 = key exchange / RSA (harvest-now-decrypt-later
@@ -44,8 +44,9 @@ cd codeql && codeql pack install
 cd targets/openssh-portable && autoreconf -i && ./configure
 codeql database create ../../dbs/openssh-portable --language=cpp --command="make -j$(nproc)"
 
-# run the pack
-codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=codeql.sarif
+# run the pack and render the report
+codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=openssh-codeql.sarif
+python3 scripts/codeql_report.py openssh-codeql.sarif
 ```
 
 On openssh-portable: CodeQL finds a strict superset of the Semgrep findings

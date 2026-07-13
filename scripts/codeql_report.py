@@ -13,8 +13,11 @@ from pathlib import Path
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("sarif", type=Path)
-    ap.add_argument("--out", type=Path, default=Path("codeql-report.md"))
+    ap.add_argument("--out", type=Path, default=None,
+                    help="default: <sarif-stem>-report.md")
     args = ap.parse_args()
+    if args.out is None:
+        args.out = Path(f"{args.sarif.stem}-report.md")
 
     doc = json.loads(args.sarif.read_text())
     findings = []
