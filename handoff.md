@@ -1,6 +1,8 @@
 # Handoff — PQC legacy-crypto scanner prototype
 
-Status as of 2026-07-13. All work committed on `main` (no remote configured).
+Status as of 2026-07-14. All work committed on `main` and pushed to
+`github.com/venusliong/pqc-migration` (SSH origin; the user pushes — agent
+sessions can't unlock the passphrase-protected key).
 
 ## Goal
 
@@ -15,16 +17,22 @@ with hybrid PQC kex — a built-in false-positive test).
 
 | Piece | Where | State |
 |---|---|---|
-| Semgrep rule pack (OpenSSL C API) | `semgrep/rules/c-legacy-crypto.yaml` | 33 findings on openssh |
+| Semgrep rule pack (OpenSSL C API) | `semgrep/rules/c-legacy-crypto.yaml` | 33 findings on openssh (13 P1 / 17 P2 / 3 P3) |
 | Semgrep runner → Markdown/JSON report | `semgrep/scan.py` | working |
-| CodeQL query pack `pqc/crypto-queries` | `codeql/` | 30 findings on openssh |
+| CodeQL query pack `pqc/crypto-queries` | `codeql/` | 30 findings on openssh (17 P1 / 10 P2 / 3 P3) |
 | CodeQL SARIF → Markdown report | `codeql/report.py` | working |
 | CodeQL MCP server registration | `.mcp.json` | verified end-to-end |
 | Evaluation: Semgrep vs CodeQL + MCP server assessment | `EVALUATION.md` | committed |
 | Per-target reports (deliverables, tracked in git) | `report/openssh-semgrep-report.md`, `report/openssh-semgrep-findings.json`, `report/openssh-codeql.sarif`, `report/openssh-codeql-report.md` | committed |
 
 Git history: `6fb7c2b` Semgrep prototype → `298bf2a` CodeQL stage + MCP →
-`faa65a5` evaluation doc + CodeQL report → `bc5bae8` per-target report names.
+`faa65a5` evaluation doc + CodeQL report → `bc5bae8` per-target report names
+→ `02b39ad` handoff → `026ce6d` restructure into `semgrep/`/`codeql/`/`report/`
+→ `d9992dd` priorities in CodeQL findings + priority summaries in both reports.
+
+Layout since `026ce6d`: each approach's tools live under its own directory
+(`semgrep/` = rules + runner, `codeql/` = query pack + SARIF renderer),
+committed deliverables under `report/` (both scripts default output there).
 
 ## Key results
 
@@ -40,7 +48,14 @@ Git history: `6fb7c2b` Semgrep prototype → `298bf2a` CodeQL stage + MCP →
   `EVP_PKEY_CTX_new_from_name`).
 - **MCP server verdict: use GitHub's official one** (user preference:
   established tools over hand-rolled). `codeql_query_run` verified
-  end-to-end against the openssh database.
+  end-to-end against the openssh database. Approved and loaded in the
+  2026-07-14 session.
+- **Priorities agree per-site across tools.** CodeQL query messages carry
+  the same P1–P3 scale as the Semgrep rules (`[Px]` prefix, parsed by
+  `codeql/report.py`); on all 26 shared sites the tools assign identical
+  priorities. Every Semgrep-only site is P2 (`regress/` EC test code),
+  every CodeQL-only site is P1 (macro-fed Ed25519) — the top severity tier
+  is exactly where pattern matching under-reports. Table in `EVALUATION.md`.
 
 ## Environment specifics a fresh session needs
 
@@ -76,8 +91,8 @@ python3 codeql/report.py report/openssh-codeql.sarif   # -> report/openssh-codeq
 
 ## Open to-dos (none blocking, in suggested order)
 
-1. Approve/load the `ql-mcp` MCP server in the next session; consider
-   parameterizing the machine-specific paths in `.mcp.json`.
+1. Consider parameterizing the machine-specific paths in `.mcp.json`
+   (server itself is approved and working as of 2026-07-14).
 2. Merge Semgrep + CodeQL findings into one per-site report; emit
    CycloneDX CBOM.
 3. Java stage: JCA rules scored against CryptoAPI-Bench (labeled, gives
