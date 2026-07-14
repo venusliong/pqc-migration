@@ -26,7 +26,27 @@ as a macro-expanded ID, invisible to per-line pattern matching:
 - `ed25519-openssl.c:212` `EVP_PKEY_new_raw_public_key(...)`
 - `sshkey.c:3346` `EVP_PKEY_new_raw_private_key(...)`
 
-**Conclusion:** on compiled code CodeQL found a strict superset of Semgrep.
+### By priority
+
+Both reports carry the same priority scale (P1 kex/RSA exposure, P2
+signatures / EC key material, P3 weak hash); as of 2026-07-14 the CodeQL
+queries embed it in their messages, so the two reports are directly
+comparable:
+
+| Priority | Semgrep | CodeQL | Shared | Semgrep-only | CodeQL-only |
+|---|---|---|---|---|---|
+| P1 | 13 | 17 | 13 | 0 | 4 |
+| P2 | 17 | 10 | 10 | 7 | 0 |
+| P3 | 3 | 3 | 3 | 0 | 0 |
+
+The totals reconcile exactly and both deltas concentrate in one priority
+each: every Semgrep-only site is P2 (all seven are `regress/` EC-key/ECDSA
+test-code sites), and every CodeQL-only site is P1 (the four macro-fed
+Ed25519 raw-key EVP calls). On the 26 shared sites the tools assign
+identical priorities — expected, since both use the same primitive→priority
+mapping, but it confirms neither pipeline mislabels a site. Notably, the
+highest-severity tier is where pattern matching under-reports: all four
+sites it misses are P1.
 The passes are complementary: Semgrep covers the full tree (including
 never-built code) in seconds with no build; CodeQL adds semantic resolution
 of macro/ID indirection and cross-function dataflow, at the cost of needing

@@ -33,5 +33,5 @@ module Flow = DataFlow::Global<AlgoNameConfig>;
 
 from Flow::PathNode source, Flow::PathNode sink
 select sink.getNode(), source, sink,
-  "Quantum-vulnerable algorithm name $@ reaches an EVP factory: migrate to ML-KEM-768 (FIPS 203) for key establishment or ML-DSA-65 (FIPS 204) for signatures.",
+  "[P1] Quantum-vulnerable algorithm name $@ reaches an EVP factory: migrate to ML-KEM-768 (FIPS 203) for key establishment or ML-DSA-65 (FIPS 204) for signatures.",
   source.getNode(), source.getNode().asExpr().(StringLiteral).getValue()

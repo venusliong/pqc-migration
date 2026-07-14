@@ -89,13 +89,17 @@ def main() -> None:
                 and not seen.add(k)]
     findings.sort(key=lambda f: (f["priority"], f["file"], f["line"]))
 
+    by_priority = collections.Counter(f["priority"] for f in findings)
     by_primitive = collections.Counter(f["primitive"] for f in findings)
     by_file = collections.Counter(f["file"] for f in findings)
 
     lines = ["# PQC migration scan report", "",
              f"Target: `{args.target}`  |  Findings: **{len(findings)}**", "",
-             "## Summary by primitive", "",
-             "| Primitive | Findings |", "|---|---|"]
+             "## Summary by priority", "",
+             "| Priority | Findings |", "|---|---|"]
+    lines += [f"| {p} | {n} |" for p, n in sorted(by_priority.items())]
+    lines += ["", "## Summary by primitive", "",
+              "| Primitive | Findings |", "|---|---|"]
     lines += [f"| {p} | {n} |" for p, n in by_primitive.most_common()]
     lines += ["", "## Top files", "", "| File | Findings |", "|---|---|"]
     lines += [f"| {f} | {n} |" for f, n in by_file.most_common(15)]

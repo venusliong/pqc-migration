@@ -85,6 +85,11 @@ Hard-won specifics:
 - CodeQL resolves macro-fed algorithm IDs (`EVP_PKEY_ED25519` into
   `EVP_PKEY_new_raw_private_key`) that the Semgrep rules missed; keep the
   two rule sets in sync when adding primitives.
+- Query messages carry the priority as a `[P1]`/`[P2]`/`[P3]` prefix (same
+  scale as the Semgrep rules); `codeql/report.py` parses it into the report's
+  Priority column — note SARIF markdown-escapes it to `\[P1\]`. When one call
+  site matches nested macros (`EVP_PKEY_EC` expands to
+  `NID_X9_62_id_ecPublicKey`), only the outermost is reported.
 
 ## Roadmap context
 

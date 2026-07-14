@@ -2,6 +2,14 @@
 
 Target: `targets/openssh-portable`  |  Findings: **33**
 
+## Summary by priority
+
+| Priority | Findings |
+|---|---|
+| P1 | 13 |
+| P2 | 17 |
+| P3 | 3 |
+
 ## Summary by primitive
 
 | Primitive | Findings |
