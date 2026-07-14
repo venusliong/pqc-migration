@@ -14,25 +14,26 @@ suite yet.
 
 ```sh
 # run a scan (semgrep lives in ~/.local/bin — ensure it's on PATH)
-python3 scripts/scan.py targets/openssh-portable --json openssh-semgrep-findings.json
+python3 semgrep/scan.py targets/openssh-portable --json report/openssh-semgrep-findings.json
 
 # debug a single rule against one file
-semgrep scan --config rules/c-legacy-crypto.yaml --metrics off <file.c>
+semgrep scan --config semgrep/rules/c-legacy-crypto.yaml --metrics off <file.c>
 
 # add a new scan target (shallow clone; targets/ holds third-party code, never edit it)
 git clone --depth 1 <repo-url> targets/<name>
 ```
 
-Reports at the repo root are committed deliverables named per target
+Reports in `report/` are committed deliverables named per target
 (`openssh-semgrep-report.md`, `openssh-codeql.sarif`,
 `openssh-codeql-report.md`); regenerate rather than hand-edit. Both report
-scripts derive per-target output names when `--out` is omitted.
+scripts default their output into `report/` with per-target names when
+`--out` is omitted.
 
 ## Architecture
 
 The contract between the two halves lives in rule **metadata**: every rule in
-`rules/*.yaml` must carry `category`, `primitive`, `priority` (P1 kex/RSA →
-P3 weak hash), and `pqc_replacement`. `scripts/scan.py` reads those fields
+`semgrep/rules/*.yaml` must carry `category`, `primitive`, `priority` (P1
+kex/RSA → P3 weak hash), and `pqc_replacement`. `semgrep/scan.py` reads those fields
 from Semgrep's JSON to build the report — a rule without them shows up as
 `?` in every column. The suggestion text lives only in rules, never in the
 script.

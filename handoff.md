@@ -15,13 +15,13 @@ with hybrid PQC kex — a built-in false-positive test).
 
 | Piece | Where | State |
 |---|---|---|
-| Semgrep rule pack (OpenSSL C API) | `rules/c-legacy-crypto.yaml` | 33 findings on openssh |
-| Semgrep runner → Markdown/JSON report | `scripts/scan.py` | working |
+| Semgrep rule pack (OpenSSL C API) | `semgrep/rules/c-legacy-crypto.yaml` | 33 findings on openssh |
+| Semgrep runner → Markdown/JSON report | `semgrep/scan.py` | working |
 | CodeQL query pack `pqc/crypto-queries` | `codeql/` | 30 findings on openssh |
-| CodeQL SARIF → Markdown report | `scripts/codeql_report.py` | working |
+| CodeQL SARIF → Markdown report | `codeql/report.py` | working |
 | CodeQL MCP server registration | `.mcp.json` | verified end-to-end |
 | Evaluation: Semgrep vs CodeQL + MCP server assessment | `EVALUATION.md` | committed |
-| Per-target reports (deliverables, tracked in git) | `openssh-semgrep-report.md`, `openssh-semgrep-findings.json`, `openssh-codeql.sarif`, `openssh-codeql-report.md` | committed |
+| Per-target reports (deliverables, tracked in git) | `report/openssh-semgrep-report.md`, `report/openssh-semgrep-findings.json`, `report/openssh-codeql.sarif`, `report/openssh-codeql-report.md` | committed |
 
 Git history: `6fb7c2b` Semgrep prototype → `298bf2a` CodeQL stage + MCP →
 `faa65a5` evaluation doc + CodeQL report → `bc5bae8` per-target report names.
@@ -60,9 +60,9 @@ Git history: `6fb7c2b` Semgrep prototype → `298bf2a` CodeQL stage + MCP →
 
 ```sh
 export PATH="$HOME/.local/bin:$HOME/tools/codeql:$PATH"
-python3 scripts/scan.py targets/openssh-portable --json openssh-semgrep-findings.json
-codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=openssh-codeql.sarif
-python3 scripts/codeql_report.py openssh-codeql.sarif   # -> openssh-codeql-report.md
+python3 semgrep/scan.py targets/openssh-portable --json report/openssh-semgrep-findings.json
+codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=report/openssh-codeql.sarif
+python3 codeql/report.py report/openssh-codeql.sarif   # -> report/openssh-codeql-report.md
 ```
 
 ## Conventions the user has set

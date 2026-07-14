@@ -2,7 +2,7 @@
 """Render a CodeQL SARIF file into the same Markdown report format as the
 Semgrep pass: file:line, crypto function, suggested PQC replacement.
 
-Usage: codeql_report.py <sarif-file> [--out codeql-report.md]
+Usage: report.py <sarif-file> [--out report/<name>-codeql-report.md]
 """
 import argparse
 import collections
@@ -14,10 +14,11 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("sarif", type=Path)
     ap.add_argument("--out", type=Path, default=None,
-                    help="default: <sarif-stem>-report.md")
+                    help="default: report/<sarif-stem>-report.md")
     args = ap.parse_args()
     if args.out is None:
-        args.out = Path(f"{args.sarif.stem}-report.md")
+        report_dir = Path(__file__).resolve().parent.parent / "report"
+        args.out = report_dir / f"{args.sarif.stem}-report.md"
 
     doc = json.loads(args.sarif.read_text())
     findings = []
@@ -46,6 +47,7 @@ def main() -> None:
               "|---|---|---|"]
     lines += [f"| `{f['file']}:{f['line']}` | `{f['function']}` | {f['detail']} |"
               for f in findings]
+    args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text("\n".join(lines) + "\n")
     print(f"{len(findings)} findings -> {args.out}")
 

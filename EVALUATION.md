@@ -1,7 +1,7 @@
 # Evaluation: Semgrep vs CodeQL (via MCP) on openssh-portable
 
 Date: 2026-07-13. Target: openssh-portable (shallow clone, `targets/`).
-Semgrep pass: `rules/c-legacy-crypto.yaml` via `scripts/scan.py`.
+Semgrep pass: `semgrep/rules/c-legacy-crypto.yaml` via `semgrep/scan.py`.
 CodeQL pass: `codeql/` pack against a database built by tracing `make`.
 
 ## Findings comparison
@@ -62,7 +62,7 @@ Evaluated as a replacement for a hand-rolled CodeQL wrapper; adopted.
 ## Reproducing
 
 ```sh
-python3 scripts/scan.py targets/openssh-portable --out openssh-semgrep-report.md --json openssh-semgrep-findings.json
-codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=openssh-codeql.sarif
-python3 scripts/codeql_report.py openssh-codeql.sarif   # -> openssh-codeql-report.md
+python3 semgrep/scan.py targets/openssh-portable --out report/openssh-semgrep-report.md --json report/openssh-semgrep-findings.json
+codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=report/openssh-codeql.sarif
+python3 codeql/report.py report/openssh-codeql.sarif   # -> report/openssh-codeql-report.md
 ```

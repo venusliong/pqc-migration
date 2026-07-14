@@ -6,14 +6,20 @@ file, line, the crypto function used, and a suggested PQC replacement
 
 ## Layout
 
-- `rules/` — Semgrep rules. `c-legacy-crypto.yaml` covers the OpenSSL C API:
-  low-level `RSA_*`/`DSA_*`/`EC_KEY_*`/`ECDSA_*`/`ECDH_*`/`DH_*`, EVP contexts
-  bound to legacy algorithm IDs or name strings, and weak hashes (MD5/SHA-1,
-  including function-pointer usage).
-- `scripts/scan.py` — runner: executes Semgrep, dedupes overlapping matches,
-  and writes a Markdown report plus optional JSON.
+- `semgrep/` — the Semgrep stage. `rules/c-legacy-crypto.yaml` covers the
+  OpenSSL C API: low-level `RSA_*`/`DSA_*`/`EC_KEY_*`/`ECDSA_*`/`ECDH_*`/`DH_*`,
+  EVP contexts bound to legacy algorithm IDs or name strings, and weak hashes
+  (MD5/SHA-1, including function-pointer usage). `scan.py` is the runner:
+  executes Semgrep, dedupes overlapping matches, and writes a Markdown report
+  plus optional JSON.
+- `codeql/` — the CodeQL stage: query pack plus `report.py` (SARIF →
+  Markdown). Details below.
+- `report/` — committed scan deliverables, named per target
+  (`openssh-semgrep-report.md`, `openssh-codeql.sarif`, …). Regenerate,
+  don't hand-edit; both scripts default their output here.
 - `targets/` — codebases under scan (not ours; shallow clones). Currently
   OpenSSH-portable.
+- `dbs/` — CodeQL databases (gitignored; rebuild per below).
 
 ## One-time setup
 
@@ -30,7 +36,7 @@ The CodeQL stage needs additional one-time setup — see below.
 ## Usage
 
 ```sh
-python3 scripts/scan.py targets/openssh-portable --json openssh-semgrep-findings.json
+python3 semgrep/scan.py targets/openssh-portable --json report/openssh-semgrep-findings.json
 ```
 
 Priorities in the report: P1 = key exchange / RSA (harvest-now-decrypt-later
@@ -57,8 +63,8 @@ cd targets/openssh-portable && autoreconf -i && ./configure
 codeql database create ../../dbs/openssh-portable --language=cpp --command="make -j$(nproc)"
 
 # each scan: run the pack and render the report
-codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=openssh-codeql.sarif
-python3 scripts/codeql_report.py openssh-codeql.sarif
+codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=report/openssh-codeql.sarif
+python3 codeql/report.py report/openssh-codeql.sarif
 ```
 
 On openssh-portable: CodeQL finds a strict superset of the Semgrep findings

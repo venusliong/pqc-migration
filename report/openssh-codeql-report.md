@@ -1,6 +1,6 @@
 # CodeQL PQC scan report
 
-Source: `openssh-codeql.sarif`  |  Findings: **30**
+Source: `report/openssh-codeql.sarif`  |  Findings: **30**
 
 ## Summary by rule
 
