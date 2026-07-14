@@ -15,10 +15,21 @@ file, line, the crypto function used, and a suggested PQC replacement
 - `targets/` — codebases under scan (not ours; shallow clones). Currently
   OpenSSH-portable.
 
+## One-time setup
+
+```sh
+# tools
+pip3 install --user semgrep   # installs to ~/.local/bin
+
+# scan target (targets/ is gitignored; clones are read-only)
+git clone --depth 1 https://github.com/openssh/openssh-portable targets/openssh-portable
+```
+
+The CodeQL stage needs additional one-time setup — see below.
+
 ## Usage
 
 ```sh
-pip3 install --user semgrep   # once
 python3 scripts/scan.py targets/openssh-portable --json openssh-semgrep-findings.json
 ```
 
@@ -37,14 +48,15 @@ exposure), P2 = signatures / EC key material, P3 = weak hashes.
   `CODEQL_PATH` and databases via `CODEQL_DATABASES_BASE_DIRS`.
 
 ```sh
-# one-time: CodeQL CLI in ~/tools/codeql, then
+# one-time setup: unzip the CodeQL CLI into ~/tools/codeql (add to PATH), then
 cd codeql && codeql pack install
 
-# build a database (requires the target to build)
+# one-time per target: build a database (requires the target to build;
+# openssh needs autoconf, make, and OpenSSL/zlib dev headers)
 cd targets/openssh-portable && autoreconf -i && ./configure
 codeql database create ../../dbs/openssh-portable --language=cpp --command="make -j$(nproc)"
 
-# run the pack and render the report
+# each scan: run the pack and render the report
 codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=openssh-codeql.sarif
 python3 scripts/codeql_report.py openssh-codeql.sarif
 ```
