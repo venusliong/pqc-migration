@@ -63,6 +63,8 @@ cd targets/openssh-portable && autoreconf -i && ./configure
 codeql database create ../../dbs/openssh-portable --language=cpp --command="make -j$(nproc)"
 
 # each scan: run the pack and render the report
+# (add --rerun to force re-evaluation; by default cached results are reused
+#  when the queries are unchanged)
 codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=report/openssh-codeql.sarif
 python3 codeql/report.py report/openssh-codeql.sarif
 ```
