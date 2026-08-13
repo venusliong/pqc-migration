@@ -11,19 +11,19 @@
  */
 
 import cpp
+import lib.CryptoConfig
 import semmle.code.cpp.dataflow.new.DataFlow
 import Flow::PathGraph
 
 module AlgoNameConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
-    source.asExpr().(StringLiteral).getValue() =
-      ["RSA", "RSA-PSS", "EC", "DSA", "DH", "DHX", "X25519", "X448", "ED25519", "ED448"]
+    algoNameSource(_, source.asExpr().(StringLiteral).getValue())
   }
 
   predicate isSink(DataFlow::Node sink) {
-    exists(FunctionCall c |
-      c.getTarget().getName() =
-        ["EVP_PKEY_new_from_name", "EVP_PKEY_CTX_new_from_name", "EVP_PKEY_Q_keygen"] and
+    exists(FunctionCall c, string name |
+      algoNameFactorySink(_, name) and
+      c.getTarget().getName() = name and
       sink.asExpr() = c.getArgument([1, 2])
     )
   }

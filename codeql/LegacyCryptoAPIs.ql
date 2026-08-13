@@ -10,41 +10,14 @@
  */
 
 import cpp
-
-/**
- * Maps a legacy API function-name regex to a migration priority
- * (P1 kex/RSA -> P3 weak hash, same scale as the Semgrep rules)
- * and a PQC migration suggestion.
- */
-predicate legacyApi(string rx, string priority, string suggestion) {
-  rx = "RSA_(new|generate_key(_ex)?|sign|verify|(public|private)_(en|de)crypt)" and
-  priority = "P1" and
-  suggestion = "RSA is quantum-vulnerable: migrate key transport to ML-KEM-768 (FIPS 203), signatures to ML-DSA-65 (FIPS 204)"
-  or
-  rx = "DSA_(new|generate_key|generate_parameters_ex|(do_)?(sign|verify))" and
-  priority = "P2" and
-  suggestion = "DSA is quantum-vulnerable: migrate to ML-DSA-65 (FIPS 204)"
-  or
-  rx = "ECDSA_((do_)?(sign|verify)|SIG_new)" and
-  priority = "P2" and
-  suggestion = "ECDSA is quantum-vulnerable: migrate to ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived signatures"
-  or
-  rx = "ECDH_compute_key" and
-  priority = "P1" and
-  suggestion = "ECDH is quantum-vulnerable: migrate to ML-KEM-768 (FIPS 203); hybrid X25519MLKEM768 for transports"
-  or
-  rx = "DH_(new|generate_key|compute_key(_padded)?|generate_parameters_ex)" and
-  priority = "P1" and
-  suggestion = "Classic DH is quantum-vulnerable: migrate to ML-KEM-768 (FIPS 203); hybrid X25519MLKEM768 for transports"
-  or
-  rx = "EC_KEY_(new(_by_curve_name)?|generate_key)" and
-  priority = "P2" and
-  suggestion = "EC key material backs quantum-vulnerable ECDSA/ECDH: migrate to ML-DSA-65 (sign) / ML-KEM-768 (kex)"
-}
+import lib.CryptoConfig
 
 /** A call to a low-level legacy crypto API. */
 predicate directLegacyCall(FunctionCall c, string priority, string msg) {
-  exists(string rx | legacyApi(rx, priority, msg) | c.getTarget().getName().regexpMatch(rx))
+  exists(string pattern |
+    legacyApiPattern(_, _, pattern, priority, msg) and
+    c.getTarget().getName().regexpMatch(pattern)
+  )
 }
 
 /**
@@ -54,13 +27,14 @@ predicate directLegacyCall(FunctionCall c, string priority, string msg) {
  * or constant).
  */
 predicate evpLegacyIdCall(FunctionCall c, string msg) {
-  c.getTarget().getName() = ["EVP_PKEY_CTX_new_id", "EVP_PKEY_set_type", "EVP_PKEY_new_raw_private_key", "EVP_PKEY_new_raw_public_key"] and
-  exists(MacroInvocation mi |
+  exists(string name | evpLegacyIdSinkFunction(_, name) | c.getTarget().getName() = name) and
+  exists(MacroInvocation mi, string pattern |
     mi.getExpr() = c.getArgument(0) and
     // outermost matching macro only: EVP_PKEY_EC expands to
     // NID_X9_62_id_ecPublicKey, which would double-report the same site
     not mi.getParentInvocation().getExpr() = c.getArgument(0) and
-    mi.getMacroName().regexpMatch("EVP_PKEY_(RSA(_PSS)?|EC|DSA|DH|ED25519|ED448|X25519|X448)|NID_X9_62_id_ecPublicKey") and
+    evpLegacyIdMacroPattern(_, pattern) and
+    mi.getMacroName().regexpMatch(pattern) and
     msg = "EVP context bound to quantum-vulnerable algorithm " + mi.getMacroName() +
       ": migrate key establishment to ML-KEM-768 (FIPS 203), signatures to ML-DSA-65 (FIPS 204)"
   )
@@ -75,9 +49,8 @@ predicate weakHashUse(Expr e, string name, string msg) {
     f = e.(FunctionCall).getTarget() or
     f = e.(FunctionAccess).getTarget()
   |
-    f.getName() = ["EVP_md5", "EVP_sha1", "MD5", "MD5_Init", "SHA1", "SHA1_Init"] and
-    name = f.getName() and
-    msg = "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"
+    weakHashFunction(_, f.getName(), msg) and
+    name = f.getName()
   )
 }
 

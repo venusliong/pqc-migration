@@ -1,0 +1,85 @@
+# OpenSSL crypto-API config for pqc/crypto-queries. Row values are migrated
+# verbatim from the QL string literals that used to live inline in
+# LegacyCryptoAPIs.ql and AlgorithmNameFlow.ql. Adding a new crypto library
+# means adding a new ext/<library>.model.yml with the same six blocks - no
+# .ql changes needed as long as the library's functions/strings fit the same
+# exact-name / regex matching this project already uses.
+
+extensions:
+  - addsTo:
+      pack: pqc/crypto-queries
+      extensible: legacyApiPattern
+    data: # library, algorithm, pattern, priority, suggestion
+      - ["openssl", "RSA",
+         "RSA_(new|generate_key(_ex)?|sign|verify|(public|private)_(en|de)crypt)",
+         "P1",
+         "RSA is quantum-vulnerable: migrate key transport to ML-KEM-768 (FIPS 203), signatures to ML-DSA-65 (FIPS 204)"]
+      - ["openssl", "DSA",
+         "DSA_(new|generate_key|generate_parameters_ex|(do_)?(sign|verify))",
+         "P2",
+         "DSA is quantum-vulnerable: migrate to ML-DSA-65 (FIPS 204)"]
+      - ["openssl", "ECDSA",
+         "ECDSA_((do_)?(sign|verify)|SIG_new)",
+         "P2",
+         "ECDSA is quantum-vulnerable: migrate to ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived signatures"]
+      - ["openssl", "ECDH",
+         "ECDH_compute_key",
+         "P1",
+         "ECDH is quantum-vulnerable: migrate to ML-KEM-768 (FIPS 203); hybrid X25519MLKEM768 for transports"]
+      - ["openssl", "DH",
+         "DH_(new|generate_key|compute_key(_padded)?|generate_parameters_ex)",
+         "P1",
+         "Classic DH is quantum-vulnerable: migrate to ML-KEM-768 (FIPS 203); hybrid X25519MLKEM768 for transports"]
+      - ["openssl", "EC_KEY",
+         "EC_KEY_(new(_by_curve_name)?|generate_key)",
+         "P2",
+         "EC key material backs quantum-vulnerable ECDSA/ECDH: migrate to ML-DSA-65 (sign) / ML-KEM-768 (kex)"]
+
+  - addsTo:
+      pack: pqc/crypto-queries
+      extensible: evpLegacyIdSinkFunction
+    data: # library, name
+      - ["openssl", "EVP_PKEY_CTX_new_id"]
+      - ["openssl", "EVP_PKEY_set_type"]
+      - ["openssl", "EVP_PKEY_new_raw_private_key"]
+      - ["openssl", "EVP_PKEY_new_raw_public_key"]
+
+  - addsTo:
+      pack: pqc/crypto-queries
+      extensible: evpLegacyIdMacroPattern
+    data: # library, pattern
+      - ["openssl", "EVP_PKEY_(RSA(_PSS)?|EC|DSA|DH|ED25519|ED448|X25519|X448)|NID_X9_62_id_ecPublicKey"]
+
+  - addsTo:
+      pack: pqc/crypto-queries
+      extensible: weakHashFunction
+    data: # library, name, suggestion
+      - ["openssl", "EVP_md5",   "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
+      - ["openssl", "EVP_sha1",  "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
+      - ["openssl", "MD5",       "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
+      - ["openssl", "MD5_Init",  "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
+      - ["openssl", "SHA1",      "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
+      - ["openssl", "SHA1_Init", "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
+
+  - addsTo:
+      pack: pqc/crypto-queries
+      extensible: algoNameSource
+    data: # library, algorithmName
+      - ["openssl", "RSA"]
+      - ["openssl", "RSA-PSS"]
+      - ["openssl", "EC"]
+      - ["openssl", "DSA"]
+      - ["openssl", "DH"]
+      - ["openssl", "DHX"]
+      - ["openssl", "X25519"]
+      - ["openssl", "X448"]
+      - ["openssl", "ED25519"]
+      - ["openssl", "ED448"]
+
+  - addsTo:
+      pack: pqc/crypto-queries
+      extensible: algoNameFactorySink
+    data: # library, functionName
+      - ["openssl", "EVP_PKEY_new_from_name"]
+      - ["openssl", "EVP_PKEY_CTX_new_from_name"]
+      - ["openssl", "EVP_PKEY_Q_keygen"]
