@@ -1,8 +1,8 @@
 # Handoff — PQC legacy-crypto scanner prototype
 
-Status as of 2026-07-14. All work committed on `main` and pushed to
-`github.com/venusliong/pqc-migration` (SSH origin; the user pushes — agent
-sessions can't unlock the passphrase-protected key).
+Status as of 2026-08-12. All work committed on `main`; **not yet pushed** —
+`main` is 2 commits ahead of `origin/main` as of this session (SSH origin;
+the user pushes — agent sessions can't unlock the passphrase-protected key).
 
 ## Goal
 
@@ -20,6 +20,7 @@ with hybrid PQC kex — a built-in false-positive test).
 | Semgrep rule pack (OpenSSL C API) | `semgrep/rules/c-legacy-crypto.yaml` | 33 findings on openssh (13 P1 / 17 P2 / 3 P3) |
 | Semgrep runner → Markdown/JSON report | `semgrep/scan.py` | working |
 | CodeQL query pack `pqc/crypto-queries` | `codeql/` | 30 findings on openssh (17 P1 / 10 P2 / 3 P3) |
+| CodeQL crypto-name config (per-library, data extensions) | `codeql/lib/CryptoConfig.qll`, `codeql/ext/openssl.model.yml` | working — function names/regexes/priorities live in YAML, `.ql` files read them via `extensible predicate`; verified behavior-identical to the old hardcoded version |
 | CodeQL SARIF → Markdown report | `codeql/report.py` | working |
 | CodeQL MCP server registration | `.mcp.json` | verified end-to-end |
 | Evaluation: Semgrep vs CodeQL + MCP server assessment | `EVALUATION.md` | committed |
@@ -28,7 +29,10 @@ with hybrid PQC kex — a built-in false-positive test).
 Git history: `6fb7c2b` Semgrep prototype → `298bf2a` CodeQL stage + MCP →
 `faa65a5` evaluation doc + CodeQL report → `bc5bae8` per-target report names
 → `02b39ad` handoff → `026ce6d` restructure into `semgrep/`/`codeql/`/`report/`
-→ `d9992dd` priorities in CodeQL findings + priority summaries in both reports.
+→ `d9992dd` priorities in CodeQL findings + priority summaries in both reports
+→ `3439c0c` document `--rerun` flag → `2cd7be7` handoff for 2026-07-14
+→ `056be0c` externalize CodeQL crypto function names into per-library data
+extensions.
 
 Layout since `026ce6d`: each approach's tools live under its own directory
 (`semgrep/` = rules + runner, `codeql/` = query pack + SARIF renderer),
@@ -56,6 +60,26 @@ committed deliverables under `report/` (both scripts default output there).
   priorities. Every Semgrep-only site is P2 (`regress/` EC test code),
   every CodeQL-only site is P1 (macro-fed Ed25519) — the top severity tier
   is exactly where pattern matching under-reports. Table in `EVALUATION.md`.
+- **CodeQL crypto names externalized to per-library config (2026-08-12).**
+  All function-name lists/regexes that used to be QL string literals in
+  `LegacyCryptoAPIs.ql`/`AlgorithmNameFlow.ql` now live in
+  `codeql/ext/openssl.model.yml`, read via `extensible predicate`s declared
+  in `codeql/lib/CryptoConfig.qll` and wired up through `qlpack.yml`'s
+  `dataExtensions:` field — CodeQL's standard data-extension mechanism (same
+  one `codeql/cpp-all` uses for its own library models), not a custom
+  parser. A future library (mbedtls, wolfssl, JCA) is a new
+  `ext/<library>.model.yml` file with zero `.ql` changes, since every query
+  predicate binds the `library` column with `_`. No wildcard/prefix
+  matching was added — this pass only moved the two matching mechanisms
+  that already existed (`regexpMatch` and exact-name `=`). Verified
+  behavior-identical: re-running against the existing `dbs/openssh-portable`
+  database gave byte-identical SARIF results (30/30 findings, same rule
+  IDs/locations/priorities/messages — the only diff was the pack's embedded
+  git-commit fingerprint); the `AlgorithmNameFlow.ql` source/sink migration
+  (openssh itself yields zero findings for that query) was separately
+  re-verified with a throwaway synthetic database. Scope was deliberately
+  CodeQL-only — Semgrep's rules still embed names inline in
+  `pattern-either` blocks (see Open to-dos).
 
 ## Environment specifics a fresh session needs
 
@@ -101,3 +125,9 @@ python3 codeql/report.py report/openssh-codeql.sarif   # -> report/openssh-codeq
    the CodeQL database.
 5. Second real C target (OpenVPN or nginx) for config-string-driven
    algorithm selection.
+6. Consider mirroring the CodeQL per-library config approach
+   (`codeql/ext/*.model.yml`) into the Semgrep side — `c-legacy-crypto.yaml`
+   still embeds function names inline per-rule, so the two rule sets still
+   require the manual sync CLAUDE.md flags. Deliberately deferred out of
+   the 2026-08-12 CodeQL refactor at the user's request (kept that change
+   small and reviewable) — not started.
