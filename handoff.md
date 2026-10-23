@@ -1,8 +1,10 @@
 # Handoff — PQC legacy-crypto scanner prototype
 
-Status as of 2026-08-12. All work committed on `main`; **not yet pushed** —
-`main` is 2 commits ahead of `origin/main` as of this session (SSH origin;
-the user pushes — agent sessions can't unlock the passphrase-protected key).
+Status as of 2026-10-22. `main` was up to date with `origin/main` at the
+start of this session (prior work had been pushed); this session's changes
+are committed locally — confirm push status before assuming they're on
+`origin` (SSH origin; the user pushes — agent sessions can't unlock the
+passphrase-protected key).
 
 ## Goal
 
@@ -17,7 +19,8 @@ with hybrid PQC kex — a built-in false-positive test).
 
 | Piece | Where | State |
 |---|---|---|
-| Semgrep rule pack (OpenSSL C API) | `semgrep/rules/c-legacy-crypto.yaml` | 33 findings on openssh (13 P1 / 17 P2 / 3 P3) |
+| Semgrep rule pack (OpenSSL C API) | `semgrep/rules/c-legacy-crypto.yaml` (generated) | 33 findings on openssh (13 P1 / 17 P2 / 3 P3) |
+| Semgrep crypto-function config + generator | `semgrep/crypto-functions.yaml`, `semgrep/gen_rules.py` | working — function/pattern lists live in YAML, generator rebuilds the rules file; verified behavior-identical to the old hardcoded version |
 | Semgrep runner → Markdown/JSON report | `semgrep/scan.py` | working |
 | CodeQL query pack `pqc/crypto-queries` | `codeql/` | 30 findings on openssh (17 P1 / 10 P2 / 3 P3) |
 | CodeQL crypto-name config (per-library, data extensions) | `codeql/lib/CryptoConfig.qll`, `codeql/ext/openssl.model.yml` | working — function names/regexes/priorities live in YAML, `.ql` files read them via `extensible predicate`; verified behavior-identical to the old hardcoded version |
@@ -32,7 +35,8 @@ Git history: `6fb7c2b` Semgrep prototype → `298bf2a` CodeQL stage + MCP →
 → `d9992dd` priorities in CodeQL findings + priority summaries in both reports
 → `3439c0c` document `--rerun` flag → `2cd7be7` handoff for 2026-07-14
 → `056be0c` externalize CodeQL crypto function names into per-library data
-extensions.
+extensions → `a2843a4` handoff for 2026-08-12 → *(this session)* externalize
+Semgrep crypto function names into `crypto-functions.yaml` + `gen_rules.py`.
 
 Layout since `026ce6d`: each approach's tools live under its own directory
 (`semgrep/` = rules + runner, `codeql/` = query pack + SARIF renderer),
@@ -125,9 +129,19 @@ python3 codeql/report.py report/openssh-codeql.sarif   # -> report/openssh-codeq
    the CodeQL database.
 5. Second real C target (OpenVPN or nginx) for config-string-driven
    algorithm selection.
-6. Consider mirroring the CodeQL per-library config approach
-   (`codeql/ext/*.model.yml`) into the Semgrep side — `c-legacy-crypto.yaml`
-   still embeds function names inline per-rule, so the two rule sets still
-   require the manual sync CLAUDE.md flags. Deliberately deferred out of
-   the 2026-08-12 CodeQL refactor at the user's request (kept that change
-   small and reviewable) — not started.
+6. ~~Mirror the CodeQL per-library config approach into the Semgrep
+   side~~ — **done (2026-10-22)**, but deliberately *not* a literal mirror:
+   the user asked for something simpler and more human-readable rather than
+   architectural parity with CodeQL's per-library extensible-predicate
+   mechanism (which Semgrep has no runtime equivalent for anyway). Landed
+   as `semgrep/crypto-functions.yaml` (flat per-rule-id function/pattern
+   lists, hand-edited) + `semgrep/gen_rules.py` (fixed message/severity/
+   metadata per rule, generates `semgrep/rules/c-legacy-crypto.yaml`, now a
+   generated-not-hand-edited file like `report/`). Verified finding- and
+   byte-identical against the committed openssh report/JSON before and
+   after (33 findings, 13 P1/17 P2/3 P3, zero diff). One landmine found and
+   documented in CLAUDE.md: Semgrep aborts the whole scan if any non-rule
+   YAML sits inside the `--config` directory, so both new files live beside
+   `semgrep/rules/`, not inside it. The two rule sets (Semgrep patterns vs.
+   CodeQL regexes) still aren't unified into one shared data source — that
+   would be a further step, not attempted here.

@@ -38,6 +38,17 @@ from Semgrep's JSON to build the report — a rule without them shows up as
 `?` in every column. The suggestion text lives only in rules, never in the
 script.
 
+`semgrep/rules/c-legacy-crypto.yaml` is generated, not hand-edited: the
+function-name/call-pattern lists for each rule live in
+`semgrep/crypto-functions.yaml` (edit this to add/remove/rename a matched
+function), while each rule's fixed message/severity/metadata stays as
+Python literals in `semgrep/gen_rules.py` (edit this only when a rule's
+meaning changes, or to add a new rule). Run `python3 semgrep/gen_rules.py`
+after editing `crypto-functions.yaml`, then re-scan. This is a deliberately
+simpler, flatter analog of the CodeQL per-library data-extension mechanism
+below — Semgrep has no runtime data-extension mechanism to mirror, so the
+split is just "data file" vs. "generator script," not per-library tables.
+
 `scan.py` post-processes Semgrep output in two ways that matter when editing
 either side:
 
@@ -62,6 +73,12 @@ either side:
 - Scan crypto *consumers*, not implementations (never point the scanner at
   OpenSSL/mbedTLS themselves — every match would be the library implementing,
   not depending on, an algorithm).
+- Semgrep aborts the whole scan if any non-rule YAML file sits inside the
+  `--config` directory (`scan.py` defaults `--rules` to all of
+  `semgrep/rules/`) — a stray file there fails with
+  `InvalidRuleSchemaError: missing 'rules' as top-level key` and returns
+  zero findings, not a loud crash. This is why `crypto-functions.yaml` and
+  `gen_rules.py` live beside `semgrep/rules/`, not inside it.
 
 ## CodeQL stage
 

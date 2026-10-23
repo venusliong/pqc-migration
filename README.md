@@ -9,7 +9,9 @@ file, line, the crypto function used, and a suggested PQC replacement
 - `semgrep/` — the Semgrep stage. `rules/c-legacy-crypto.yaml` covers the
   OpenSSL C API: low-level `RSA_*`/`DSA_*`/`EC_KEY_*`/`ECDSA_*`/`ECDH_*`/`DH_*`,
   EVP contexts bound to legacy algorithm IDs or name strings, and weak hashes
-  (MD5/SHA-1, including function-pointer usage). `scan.py` is the runner:
+  (MD5/SHA-1, including function-pointer usage). It's generated from
+  `crypto-functions.yaml` (the editable function/pattern lists) by
+  `gen_rules.py` — regenerate, don't hand-edit. `scan.py` is the runner:
   executes Semgrep, dedupes overlapping matches, and writes a Markdown report
   plus optional JSON.
 - `codeql/` — the CodeQL stage: query pack plus `report.py` (SARIF →
@@ -36,6 +38,9 @@ The CodeQL stage needs additional one-time setup — see below.
 ## Usage
 
 ```sh
+# after editing semgrep/crypto-functions.yaml (not each scan)
+python3 semgrep/gen_rules.py
+
 python3 semgrep/scan.py targets/openssh-portable --json report/openssh-semgrep-findings.json
 ```
 
