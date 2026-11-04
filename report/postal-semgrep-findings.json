@@ -1,0 +1,302 @@
+[
+  {
+    "file": "app/models/domain.rb",
+    "line": 87,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "app/models/domain.rb",
+    "line": 93,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "app/models/domain.rb",
+    "line": 99,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "app/models/domain.rb",
+    "line": 114,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "lib/postal/config.rb",
+    "line": 117,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "script/generate_tls_certificate.rb",
+    "line": 10,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "spec/lib/dkim_header_spec.rb",
+    "line": 19,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "spec/lib/postal/signer_spec.rb",
+    "line": 7,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "spec/lib/postal_spec.rb",
+    "line": 9,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "spec/models/domain_spec.rb",
+    "line": 170,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "spec/models/domain_spec.rb",
+    "line": 180,
+    "function": "RSA.new",
+    "primitive": "RSA",
+    "category": "rsa",
+    "priority": "P1",
+    "suggestion": "ML-KEM-768 (encrypt/transport) or ML-DSA-65 (sign)",
+    "rule": "ruby-openssl-rsa"
+  },
+  {
+    "file": "app/lib/dkim_header.rb",
+    "line": 127,
+    "function": "@dkim_key.sign",
+    "primitive": "Sign/Verify",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "ruby-openssl-signature"
+  },
+  {
+    "file": "lib/postal/signer.rb",
+    "line": 32,
+    "function": "private_key.sign",
+    "primitive": "Sign/Verify",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "ruby-openssl-signature"
+  },
+  {
+    "file": "lib/postal/signer.rb",
+    "line": 55,
+    "function": "private_key.sign",
+    "primitive": "Sign/Verify",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "ruby-openssl-signature"
+  },
+  {
+    "file": "script/generate_tls_certificate.rb",
+    "line": 23,
+    "function": "cert.sign",
+    "primitive": "Sign/Verify",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "ruby-openssl-signature"
+  },
+  {
+    "file": "spec/lib/postal/signer_spec.rb",
+    "line": 26,
+    "function": "signer.sign",
+    "primitive": "Sign/Verify",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "ruby-openssl-signature"
+  },
+  {
+    "file": "spec/lib/postal/signer_spec.rb",
+    "line": 28,
+    "function": "STATIC_PRIVATE_KEY.public_key.verify",
+    "primitive": "Sign/Verify",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "ruby-openssl-signature"
+  },
+  {
+    "file": "spec/lib/postal/signer_spec.rb",
+    "line": 40,
+    "function": "STATIC_PRIVATE_KEY.public_key.verify",
+    "primitive": "Sign/Verify",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "ruby-openssl-signature"
+  },
+  {
+    "file": "spec/lib/postal/signer_spec.rb",
+    "line": 59,
+    "function": "STATIC_PRIVATE_KEY.public_key.verify",
+    "primitive": "Sign/Verify",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "ruby-openssl-signature"
+  },
+  {
+    "file": "spec/lib/postal/signer_spec.rb",
+    "line": 71,
+    "function": "STATIC_PRIVATE_KEY.public_key.verify",
+    "primitive": "Sign/Verify",
+    "category": "signature",
+    "priority": "P2",
+    "suggestion": "ML-DSA-65 (FIPS 204) or SLH-DSA (FIPS 205)",
+    "rule": "ruby-openssl-signature"
+  },
+  {
+    "file": "app/controllers/legacy_api/messages_controller.rb",
+    "line": 74,
+    "function": "Digest::SHA1.hexdigest",
+    "primitive": "MD5/SHA1",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "ruby-openssl-weak-hash"
+  },
+  {
+    "file": "app/lib/smtp_server/client.rb",
+    "line": 9,
+    "function": "Digest.new",
+    "primitive": "MD5/SHA1(name)",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "ruby-openssl-weak-hash-byname"
+  },
+  {
+    "file": "app/lib/smtp_server/client.rb",
+    "line": 247,
+    "function": "Digest::SHA1.hexdigest",
+    "primitive": "MD5/SHA1",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "ruby-openssl-weak-hash"
+  },
+  {
+    "file": "app/models/user_invite.rb",
+    "line": 33,
+    "function": "Digest::MD5.hexdigest",
+    "primitive": "MD5/SHA1",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "ruby-openssl-weak-hash"
+  },
+  {
+    "file": "lib/postal/message_db/message.rb",
+    "line": 490,
+    "function": "Digest::SHA1.hexdigest",
+    "primitive": "MD5/SHA1",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "ruby-openssl-weak-hash"
+  },
+  {
+    "file": "lib/postal/signer.rb",
+    "line": 55,
+    "function": "Digest.new",
+    "primitive": "MD5/SHA1(name)",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "ruby-openssl-weak-hash-byname"
+  },
+  {
+    "file": "spec/apis/legacy_api/messages/message_spec.rb",
+    "line": 282,
+    "function": "Digest::SHA1.hexdigest",
+    "primitive": "MD5/SHA1",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "ruby-openssl-weak-hash"
+  },
+  {
+    "file": "spec/lib/postal/signer_spec.rb",
+    "line": 59,
+    "function": "Digest.new",
+    "primitive": "MD5/SHA1(name)",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "ruby-openssl-weak-hash-byname"
+  },
+  {
+    "file": "spec/lib/postal/signer_spec.rb",
+    "line": 71,
+    "function": "Digest.new",
+    "primitive": "MD5/SHA1(name)",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "ruby-openssl-weak-hash-byname"
+  },
+  {
+    "file": "spec/lib/smtp_server/client/auth_spec.rb",
+    "line": 112,
+    "function": "HMAC.hexdigest",
+    "primitive": "MD5/SHA1(name)",
+    "category": "hash",
+    "priority": "P3",
+    "suggestion": "SHA-384 or SHA3-384",
+    "rule": "ruby-openssl-weak-hash-byname"
+  }
+]

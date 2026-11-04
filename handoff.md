@@ -1,10 +1,10 @@
 # Handoff — PQC legacy-crypto scanner prototype
 
-Status as of 2026-10-22. `main` was up to date with `origin/main` at the
-start of this session (prior work had been pushed); this session's changes
-are committed locally — confirm push status before assuming they're on
-`origin` (SSH origin; the user pushes — agent sessions can't unlock the
-passphrase-protected key).
+Status as of 2026-11-04. Everything through `f475626` (the Semgrep
+crypto-function externalization) is committed **and pushed** — `main` and
+`origin/main` both at `f475626`, confirmed. The 2026-11-04 work below is
+**uncommitted in the working tree**; the user commits and pushes (SSH origin
+with a passphrase-protected key that agent sessions can't unlock).
 
 ## Goal
 
@@ -15,19 +15,21 @@ First real target: OpenSSH-portable (chosen over synthetic benchmarks like
 NIST Juliet because it's production code that mixes legacy RSA/ECDSA/DH
 with hybrid PQC kex — a built-in false-positive test).
 
-## What's built (all working, all committed)
+## What's built (all working; the 2026-11-04 Ruby stage is uncommitted)
 
 | Piece | Where | State |
 |---|---|---|
 | Semgrep rule pack (OpenSSL C API) | `semgrep/rules/c-legacy-crypto.yaml` (generated) | 33 findings on openssh (13 P1 / 17 P2 / 3 P3) |
+| Semgrep rule pack (Ruby OpenSSL stdlib) | `semgrep/rules/ruby-legacy-crypto.yaml` (generated) | 30 findings / 27 sites on postal (11 P1 / 9 P2 / 10 P3) |
 | Semgrep crypto-function config + generator | `semgrep/crypto-functions.yaml`, `semgrep/gen_rules.py` | working — function/pattern lists live in YAML, generator rebuilds the rules file; verified behavior-identical to the old hardcoded version |
 | Semgrep runner → Markdown/JSON report | `semgrep/scan.py` | working |
-| CodeQL query pack `pqc/crypto-queries` | `codeql/` | 30 findings on openssh (17 P1 / 10 P2 / 3 P3) |
-| CodeQL crypto-name config (per-library, data extensions) | `codeql/lib/CryptoConfig.qll`, `codeql/ext/openssl.model.yml` | working — function names/regexes/priorities live in YAML, `.ql` files read them via `extensible predicate`; verified behavior-identical to the old hardcoded version |
+| CodeQL query pack `pqc/cpp-crypto-queries` | `codeql/cpp/` | 30 findings on openssh (17 P1 / 10 P2 / 3 P3) |
+| CodeQL query pack `pqc/ruby-crypto-queries` | `codeql/ruby/` | 21 findings on postal (11 P1 / 0 P2 / 10 P3) |
+| CodeQL crypto-name config (per-library, data extensions) | `codeql/cpp/lib/CryptoConfig.qll`, `codeql/cpp/ext/openssl.model.yml`, `codeql/ruby/lib/RubyCryptoConfig.qll`, `codeql/ruby/ext/openssl-ruby.model.yml` | working — function names/regexes/priorities live in YAML, `.ql` files read them via `extensible predicate`; verified behavior-identical to the old hardcoded version |
 | CodeQL SARIF → Markdown report | `codeql/report.py` | working |
 | CodeQL MCP server registration | `.mcp.json` | verified end-to-end |
-| Evaluation: Semgrep vs CodeQL + MCP server assessment | `EVALUATION.md` | committed |
-| Per-target reports (deliverables, tracked in git) | `report/openssh-semgrep-report.md`, `report/openssh-semgrep-findings.json`, `report/openssh-codeql.sarif`, `report/openssh-codeql-report.md` | committed |
+| Evaluation: Semgrep vs CodeQL + MCP server assessment | `EVALUATION.md` | committed; postal (Ruby) section added 2026-11-04 |
+| Per-target reports (deliverables, tracked in git) | `report/openssh-*` and `report/postal-*` (semgrep report + JSON, CodeQL SARIF + report) | openssh committed; postal uncommitted (2026-11-04) |
 
 Git history: `6fb7c2b` Semgrep prototype → `298bf2a` CodeQL stage + MCP →
 `faa65a5` evaluation doc + CodeQL report → `bc5bae8` per-target report names
@@ -39,8 +41,11 @@ extensions → `a2843a4` handoff for 2026-08-12 → *(this session)* externalize
 Semgrep crypto function names into `crypto-functions.yaml` + `gen_rules.py`.
 
 Layout since `026ce6d`: each approach's tools live under its own directory
-(`semgrep/` = rules + runner, `codeql/` = query pack + SARIF renderer),
+(`semgrep/` = rules + runner, `codeql/` = query packs + SARIF renderer),
 committed deliverables under `report/` (both scripts default output there).
+Since 2026-11-04 the CodeQL side is one sibling pack per language
+(`codeql/cpp/`, `codeql/ruby/`) with `codeql/report.py` shared; always pass
+the language directory to `database analyze`, never the `codeql/` parent.
 
 ## Key results
 
@@ -89,23 +94,45 @@ committed deliverables under `report/` (both scripts default output there).
 
 - CodeQL CLI 2.26.0 at `~/tools/codeql/codeql` — **not on default PATH**.
 - Semgrep 1.169.0 via `pip3 install --user` — in `~/.local/bin`.
-- CodeQL database at `dbs/openssh-portable` (gitignored; rebuild per README:
-  `autoreconf -i && ./configure`, then `codeql database create ... --command=make`).
-- `targets/openssh-portable` is a gitignored shallow clone.
+- CodeQL databases at `dbs/openssh-portable` and `dbs/postal` (gitignored;
+  rebuild per README: C needs `autoreconf -i && ./configure` then
+  `codeql database create ... --command=make`; Ruby needs no build at all —
+  `codeql database create dbs/postal --language=ruby --source-root targets/postal`,
+  ~20 s, 7.3 MB).
+- `targets/openssh-portable` and `targets/postal` are gitignored shallow
+  clones (postal pinned at `d96eddb`).
+- `codeql/ruby/qlpack.yml` pins `codeql/ruby-all: "5.*"` (→ 5.2.2). 6.x/7.x
+  cannot be installed by CLI 2.26.0: their OCI manifests were written by CLI
+  2.27.4 and carry a `config.digest` field this CLI's parser rejects
+  (`UnrecognizedPropertyException "Unrecognized field \"digest\""`).
+  Unpinning means upgrading the CLI, which also invalidates the verified C
+  baseline — do both together and re-run the regression gate.
 - `.mcp.json` registers `ql-mcp` (`npx -y codeql-development-mcp-server`,
-  env `CODEQL_PATH`, `CODEQL_DATABASES_BASE_DIRS` — absolute, machine-specific
-  paths). First session using it will prompt for approval. Works on Node 24
-  despite the package's engines saying >= 25.6. Tool args: `query` and
-  `database`, absolute paths.
+  env `CODEQL_PATH` = `${HOME}/tools/codeql/codeql`,
+  `CODEQL_DATABASES_BASE_DIRS` = `${CODEQL_DATABASES_BASE_DIRS:-dbs}` — no
+  machine-specific paths as of 2026-11-04). First
+  session using it will prompt for approval. Works on Node 24 despite the
+  package's engines saying >= 25.6. Tool args: `query` (absolute) and
+  `database` (absolute, or relative to the project root).
 - Node v24.14.1, WSL2 Ubuntu.
+- `codeql` is now on PATH permanently via `~/.bashrc:121`, so the
+  `export PATH=...` line in the reproduce block is no longer needed on this
+  machine (keep it documented for a fresh checkout).
 
 ## Reproduce the scans
 
 ```sh
 export PATH="$HOME/.local/bin:$HOME/tools/codeql:$PATH"
+
+# C
 python3 semgrep/scan.py targets/openssh-portable --json report/openssh-semgrep-findings.json
-codeql database analyze dbs/openssh-portable codeql/ --format=sarif-latest --output=report/openssh-codeql.sarif
+codeql database analyze dbs/openssh-portable codeql/cpp --format=sarif-latest --output=report/openssh-codeql.sarif
 python3 codeql/report.py report/openssh-codeql.sarif   # -> report/openssh-codeql-report.md
+
+# Ruby
+python3 semgrep/scan.py targets/postal --json report/postal-semgrep-findings.json
+codeql database analyze dbs/postal codeql/ruby --format=sarif-latest --output=report/postal-codeql.sarif
+python3 codeql/report.py report/postal-codeql.sarif    # -> report/postal-codeql-report.md
 ```
 
 ## Conventions the user has set
@@ -117,16 +144,97 @@ python3 codeql/report.py report/openssh-codeql.sarif   # -> report/openssh-codeq
   decision).
 - Scan crypto *consumers*, not implementations.
 
+## 2026-11-04 session (uncommitted)
+
+- **`.mcp.json` parameterized** — closes to-do #1; see the env note above.
+  First attempt used `${CODEQL_PATH:-${HOME}/tools/codeql/codeql}` and broke
+  the server (`CONNECTION_CLOSED`): Claude Code's `${VAR:-default}` expansion
+  ends at the first `}`, so the nested default resolved to the literal
+  `${HOME/tools/codeql/codeql}`. Fixed by using a plain `${HOME}` with no
+  override default — see the landmine note in `CLAUDE.md`. **Verified green
+  2026-11-04** after reconnect: `list_codeql_databases` finds
+  `dbs/openssh-portable` via the relative base dir, and `codeql_query_run` on
+  `LegacyCryptoAPIs.ql` returns 30 rows — the unchanged C baseline.
+- **`docs/codeql-quantum-assessment.md` (new)** — assessment of GitHub's
+  official `experimental/quantum` crypto model, found as a transitive
+  dependency of `codeql/cpp-all`. Conclusion: it identifies and inventories
+  crypto (CBOM) but makes **no** quantum-exposure judgment and never names a
+  PQC replacement, so this project's P1–P3 + FIPS 203/204/205 layer is
+  complementary, not redundant. Lists five concrete reuse opportunities —
+  notably its ~1000-row NID table as an upgrade to our one-regex macro rule,
+  and `WeakAsymmetricKeyGenSize.ql` as a model for key-size dataflow.
+  Cross-referenced from `EVALUATION.md`.
+- **Ruby/Rails stage built** (plan at
+  `~/.claude/plans/i-want-to-extend-tender-conway.md`, followed end to end;
+  target `postalserver/postal` @ `d96eddb`). Landed:
+  - Semgrep: `gen_rules.py` gained a `language` dimension — one data file,
+    one generator, one rules file per language. 7 Ruby rules in
+    `rules/ruby-legacy-crypto.yaml`. **30 findings / 27 sites** on postal
+    (11 P1 / 9 P2 / 10 P3).
+  - `scan.py`: Ruby function-name branch (suffix dispatch), so the report
+    shows `RSA.new` / `Digest::SHA1.hexdigest` / `private_key.sign` instead
+    of a bare primitive or a truncated line. It takes the rule id, so a
+    signature finding names the receiver while the same line's digest
+    finding names the digest.
+  - CodeQL: restructured into sibling per-language packs
+    (`codeql/cpp/` = `pqc/cpp-crypto-queries`, `codeql/ruby/` =
+    `pqc/ruby-crypto-queries`), `report.py` shared and unchanged.
+    `RubyLegacyCryptoAPIs.ql` + `rubyLegacyApiCall` data extension:
+    **21 findings** on postal (11 P1 / 0 P2 / 10 P3).
+  - P3 on Ruby reuses the official `codeql/ruby-all` modeling via
+    `Cryptography::CryptographicOperation` (hashing only, so DES/RC4 stay out
+    of a quantum scale); our rows take precedence where both match, else
+    CodeQL merges the two results at one site into one message.
+  - **Result inverts the C finding:** CodeQL's 21 sites are a strict
+    *subset* of Semgrep's 27 — no build-mode blind spot and no preprocessor,
+    so CodeQL's two C advantages don't apply. All 6 Semgrep-only sites are
+    the P2 `key.sign(…)` tier (receiver is a typed value → needs the
+    deferred dataflow query). Zero CodeQL-only. Priorities agree on all 21
+    shared sites. One FP, in Semgrep: `signer_spec.rb:26` `signer.sign(data)`
+    (receiver is a wrapper, not a key). Full per-site table in
+    `EVALUATION.md`.
+  - **C regression gate green throughout**: openssh Semgrep 33 findings
+    byte-identical (report + JSON), CodeQL 30 rows normalized-identical,
+    rendered report byte-identical below the `Source:` line, extension row
+    counts unchanged at 6/4/1/6/10/3. `report/openssh-codeql.sarif` was
+    regenerated from the moved pack (its embedded pack path changed; the
+    rendered report did not).
+  - Docs updated: `README.md` gained a **Language prerequisites** section
+    (Semgrep needs nothing per language; CodeQL needs one `pack install` per
+    pack; Ruby parsing needs no Ruby runtime, no `bundle install` and no
+    `--command`, because the extractor is a self-contained binary — verified:
+    `bundle` is not installed on this machine and the database built fine),
+    plus per-language commands labelled one-time / per-target / each-scan.
+    `CLAUDE.md` and `EVALUATION.md` cover the architecture and the per-site
+    comparison.
+  - Deferred as designed: the Ruby dataflow query (and with it the shared
+    third pack for `algoNameSource`), and X.509 `Certificate.new` as its own
+    finding — it is a container, flagged through its `.sign`.
+
 ## Open to-dos (none blocking, in suggested order)
 
-1. Consider parameterizing the machine-specific paths in `.mcp.json`
-   (server itself is approved and working as of 2026-07-14).
-2. Merge Semgrep + CodeQL findings into one per-site report; emit
-   CycloneDX CBOM.
-3. Java stage: JCA rules scored against CryptoAPI-Bench (labeled, gives
-   precision/recall).
-4. Close the `regress/` blind spot by building openssh test binaries into
-   the CodeQL database.
+1. ~~Consider parameterizing the machine-specific paths in `.mcp.json`~~ —
+   **done (2026-11-04)**: `CODEQL_PATH` is a plain `${HOME}/tools/codeql/codeql`
+   with **no** `${VAR:-default}` wrapper (a nested default breaks the server,
+   see the landmine in `CLAUDE.md`), and `CODEQL_DATABASES_BASE_DIRS` is
+   `${CODEQL_DATABASES_BASE_DIRS:-dbs}` (relative, resolved against the
+   project root). That variable is not set in the user's environment, so the
+   default is the live configuration; the override exists for other
+   checkouts. A CLI installed elsewhere needs the `CODEQL_PATH` line edited.
+2. Ruby dataflow query (the stage deliberately deferred on 2026-11-04).
+   Closes the whole P2 gap — `key.sign(digest, data)` where the receiver is
+   a typed value, the only tier CodeQL misses on postal — and the
+   `OpenSSL::HMAC.hexdigest(CRAM_MD5_DIGEST, …)` miss both tools share.
+   Also eliminates Semgrep's one FP (`signer.sign(data)` on a wrapper
+   object). This is the trigger for creating the shared third pack:
+   `algoNameSource` is the one genuinely language-neutral predicate and only
+   the dataflow query consumes it.
+3. Merge Semgrep + CodeQL findings into one per-site report; emit
+   CycloneDX CBOM. (The scratch comparator used for the postal evaluation is
+   a starting point: match on `(file, line)`, keep both tools' priorities.)
+4. Java stage: JCA rules scored against CryptoAPI-Bench (labeled, gives
+   precision/recall). Note Java *does* have an official `codeql/quantum`
+   instantiation — worth building on rather than hand-rolling.
 5. Second real C target (OpenVPN or nginx) for config-string-driven
    algorithm selection.
 6. ~~Mirror the CodeQL per-library config approach into the Semgrep

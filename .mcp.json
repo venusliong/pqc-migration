@@ -8,8 +8,8 @@
         "codeql-development-mcp-server"
       ],
       "env": {
-        "CODEQL_PATH": "/home/venusliong/tools/codeql/codeql",
-        "CODEQL_DATABASES_BASE_DIRS": "/home/venusliong/pqc/pqc-migration/dbs"
+        "CODEQL_PATH": "${HOME}/tools/codeql/codeql",
+        "CODEQL_DATABASES_BASE_DIRS": "${CODEQL_DATABASES_BASE_DIRS:-dbs}"
       }
     }
   }

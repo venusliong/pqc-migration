@@ -3,9 +3,9 @@
  * `codeql/ext/*.model.yml`. Keeps `library` as the first column of every
  * predicate so a future `ext/mbedtls.model.yml`, `ext/wolfssl.model.yml`,
  * etc. adds coverage with zero changes to the `.ql` query logic.
+ *
+ * Language-neutral: the queries import their own language library.
  */
-
-import cpp
 
 /** A legacy low-level crypto API call, matched by regex, with migration metadata. */
 extensible predicate legacyApiPattern(

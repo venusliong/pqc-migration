@@ -7,7 +7,7 @@
 
 extensions:
   - addsTo:
-      pack: pqc/crypto-queries
+      pack: pqc/cpp-crypto-queries
       extensible: legacyApiPattern
     data: # library, algorithm, pattern, priority, suggestion
       - ["openssl", "RSA",
@@ -36,7 +36,7 @@ extensions:
          "EC key material backs quantum-vulnerable ECDSA/ECDH: migrate to ML-DSA-65 (sign) / ML-KEM-768 (kex)"]
 
   - addsTo:
-      pack: pqc/crypto-queries
+      pack: pqc/cpp-crypto-queries
       extensible: evpLegacyIdSinkFunction
     data: # library, name
       - ["openssl", "EVP_PKEY_CTX_new_id"]
@@ -45,13 +45,13 @@ extensions:
       - ["openssl", "EVP_PKEY_new_raw_public_key"]
 
   - addsTo:
-      pack: pqc/crypto-queries
+      pack: pqc/cpp-crypto-queries
       extensible: evpLegacyIdMacroPattern
     data: # library, pattern
       - ["openssl", "EVP_PKEY_(RSA(_PSS)?|EC|DSA|DH|ED25519|ED448|X25519|X448)|NID_X9_62_id_ecPublicKey"]
 
   - addsTo:
-      pack: pqc/crypto-queries
+      pack: pqc/cpp-crypto-queries
       extensible: weakHashFunction
     data: # library, name, suggestion
       - ["openssl", "EVP_md5",   "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
@@ -62,7 +62,7 @@ extensions:
       - ["openssl", "SHA1_Init", "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
 
   - addsTo:
-      pack: pqc/crypto-queries
+      pack: pqc/cpp-crypto-queries
       extensible: algoNameSource
     data: # library, algorithmName
       - ["openssl", "RSA"]
@@ -77,7 +77,7 @@ extensions:
       - ["openssl", "ED448"]
 
   - addsTo:
-      pack: pqc/crypto-queries
+      pack: pqc/cpp-crypto-queries
       extensible: algoNameFactorySink
     data: # library, functionName
       - ["openssl", "EVP_PKEY_new_from_name"]

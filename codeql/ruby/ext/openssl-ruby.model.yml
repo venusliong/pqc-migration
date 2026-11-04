@@ -1,0 +1,38 @@
+# Ruby crypto-API config for pqc/ruby-crypto-queries. Same P1-P3 scale and the
+# same PQC suggestions as the C side's ext/openssl.model.yml; the columns
+# differ because Ruby calls arrive on a constant path, not a flat name.
+#
+# `library` is provenance only -- each language's model file lives in its own
+# pack, so cross-language contamination is impossible by construction.
+
+extensions:
+  - addsTo:
+      pack: pqc/ruby-crypto-queries
+      extensible: rubyLegacyApiCall
+    data: # library, algorithm, receiverPath, methodPattern, argPattern, priority, suggestion
+      - ["openssl-ruby", "RSA", "OpenSSL::PKey::RSA", "new|generate", "",
+         "P1",
+         "RSA is quantum-vulnerable: migrate key transport to ML-KEM-768 (FIPS 203), signatures to ML-DSA-65 (FIPS 204)"]
+      - ["openssl-ruby", "DH", "OpenSSL::PKey::DH", "new|generate", "",
+         "P1",
+         "Classic DH is quantum-vulnerable: migrate to ML-KEM-768 (FIPS 203); hybrid X25519MLKEM768 for transports"]
+      - ["openssl-ruby", "EC", "OpenSSL::PKey::EC", "new|generate", "",
+         "P2",
+         "EC key material backs quantum-vulnerable ECDSA/ECDH: migrate to ML-DSA-65 (sign) / ML-KEM-768 (kex)"]
+      - ["openssl-ruby", "DSA", "OpenSSL::PKey::DSA", "new|generate", "",
+         "P2",
+         "DSA is quantum-vulnerable: migrate to ML-DSA-65 (FIPS 204)"]
+      - ["digest-ruby", "MD5", "Digest::MD5", "new|digest|hexdigest|base64digest|file", "",
+         "P3",
+         "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
+      - ["digest-ruby", "SHA1", "Digest::SHA1", "new|digest|hexdigest|base64digest|file", "",
+         "P3",
+         "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
+      - ["openssl-ruby", "WEAK_HASH", "OpenSSL::Digest", "new|digest|hexdigest|base64digest",
+         "(?i)(md5|sha-?1)",
+         "P3",
+         "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]
+      - ["openssl-ruby", "WEAK_HASH", "OpenSSL::HMAC", "new|digest|hexdigest|base64digest",
+         "(?i)(md5|sha-?1)",
+         "P3",
+         "MD5/SHA-1 are classically broken for collisions; use SHA-384+ (or SHA3) for PQC-era margin"]

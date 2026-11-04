@@ -1,0 +1,7 @@
+name: pqc/ruby-crypto-queries
+version: 0.1.0
+description: Detect quantum-vulnerable crypto API usage in Ruby with PQC migration suggestions
+dependencies:
+  codeql/ruby-all: "5.*"
+dataExtensions:
+  - ext/*.model.yml

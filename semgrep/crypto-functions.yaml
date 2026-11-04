@@ -79,3 +79,47 @@ c-openssl-evp-legacy-alg-name:
     - "EVP_PKEY_CTX_new_from_name($LIB, $ALG, ...)"
     - "EVP_PKEY_Q_keygen($LIB, $PROP, $ALG, ...)"
   alg_regex: '"(RSA|RSA-PSS|EC|DSA|DH|DHX|X25519|X448|ED25519|ED448)"'
+
+# ---------------------------------------------------------------------------
+# Ruby: OpenSSL stdlib (OpenSSL::PKey / X509 / HMAC) + Digest
+# ---------------------------------------------------------------------------
+
+ruby-openssl-rsa:
+  - "OpenSSL::PKey::RSA.new(...)"
+  - "OpenSSL::PKey::RSA.generate(...)"
+
+ruby-openssl-dh-key-agreement:
+  - "OpenSSL::PKey::DH.new(...)"
+  - "OpenSSL::PKey::DH.generate(...)"
+  # bang form takes no arguments, so match the bare call
+  - "$DH.generate_key!"
+  - "$DH.compute_key(...)"
+
+ruby-openssl-ec-key:
+  - "OpenSSL::PKey::EC.new(...)"
+  - "OpenSSL::PKey::EC.generate(...)"
+
+ruby-openssl-dsa:
+  - "OpenSSL::PKey::DSA.new(...)"
+  - "OpenSSL::PKey::DSA.generate(...)"
+
+ruby-openssl-signature:
+  # receiver is a key or an X509::Certificate/Request; both reach .sign
+  - "$K.sign(...)"
+  - "$K.verify(...)"
+
+ruby-openssl-weak-hash:
+  # bare class references also match digest-class arguments and constants
+  # (Ruby analog of the C `EVP_md5` function-pointer lesson)
+  - "OpenSSL::Digest::MD5"
+  - "OpenSSL::Digest::SHA1"
+  - "Digest::MD5"
+  - "Digest::SHA1"
+
+ruby-openssl-weak-hash-byname:
+  sink_patterns:
+    - "OpenSSL::Digest.new($ALG)"
+    - "OpenSSL::HMAC.digest($ALG, ...)"
+    - "OpenSSL::HMAC.hexdigest($ALG, ...)"
+    - "OpenSSL::HMAC.base64digest($ALG, ...)"
+  alg_regex: '[''"](?i:md5|sha-?1)[''"]'

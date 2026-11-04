@@ -38,12 +38,43 @@ CRYPTO_IDENT_RE = re.compile(
 )
 
 
-def crypto_function(path: Path, line: int) -> str:
+# Ruby crypto is called through qualified constants (OpenSSL::PKey::RSA.new),
+# which the C regexes above cannot see: they require `identifier(` and prefer
+# names containing '_'.
+RUBY_CRYPTO_RE = re.compile(
+    r"\b((?:OpenSSL::)?(?:PKey|Cipher|Digest|HMAC|X509)(?:::\w+)*)\.(\w+[!?]?)"
+)
+# signature/key-agreement calls name the receiver, not a crypto constant
+RUBY_RECEIVER_RE = re.compile(
+    r"([\w@.]+)\.(sign|verify|generate_key!|compute_key)\b"
+)
+
+
+def ruby_crypto_function(text: str, prefer_receiver: bool) -> str | None:
+    if prefer_receiver:
+        m = RUBY_RECEIVER_RE.search(text)
+        if m:
+            return f"{m.group(1)}.{m.group(2)}"
+    m = RUBY_CRYPTO_RE.search(text)
+    if m:
+        # OpenSSL::PKey::RSA.new -> RSA.new; Digest::SHA1.hexdigest kept in full
+        receiver = m.group(1).removeprefix("OpenSSL::").removeprefix("PKey::")
+        return f"{receiver}.{m.group(2)}"
+    m = RUBY_RECEIVER_RE.search(text)
+    if m:
+        return f"{m.group(1)}.{m.group(2)}"
+    return None
+
+
+def crypto_function(path: Path, line: int, rule: str = "") -> str:
     # semgrep may redact extra.lines when not logged in; read the source
     try:
         text = path.read_text(errors="replace").splitlines()[line - 1]
     except (OSError, IndexError):
         return "?"
+    if path.suffix == ".rb":
+        name = ruby_crypto_function(text, prefer_receiver=rule.endswith("signature"))
+        return name if name else text.strip()[:40]
     m = CRYPTO_CALL_RE.search(text)
     if m:
         return m.group(1)
@@ -75,7 +106,8 @@ def main() -> None:
         findings.append({
             "file": str(Path(r["path"]).relative_to(args.target)),
             "line": r["start"]["line"],
-            "function": crypto_function(Path(r["path"]), r["start"]["line"]),
+            "function": crypto_function(Path(r["path"]), r["start"]["line"],
+                                        r["check_id"].rsplit(".", 1)[-1]),
             "primitive": meta.get("primitive", "?"),
             "category": meta.get("category", "?"),
             "priority": meta.get("priority", "?"),
